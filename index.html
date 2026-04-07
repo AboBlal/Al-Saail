@@ -3,80 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Al-Sail | تطبيق السائل</title>
-    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>Al-Sail | السائل</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri&family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --primary: #064e3b; --accent: #c5a059; --bg: #f8fafc; }
         body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; text-align: center; }
-        .header { background: var(--primary); color: var(--accent); padding: 50px 20px; border-radius: 0 0 50px 50px; }
-        .header h1 { font-family: 'Amiri', serif; font-size: 40px; margin: 0; }
-        .header .en-name { font-size: 18px; display: block; margin-top: 5px; letter-spacing: 2px; }
+        .header { background: var(--primary); color: var(--accent); padding: 50px 20px; border-radius: 0 0 50px 50px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .header h1 { font-family: 'Amiri', serif; font-size: 42px; margin: 0; }
         .search-area { margin: -35px auto 20px; width: 90%; max-width: 600px; display: flex; gap: 10px; }
-        input { flex: 1; padding: 18px 25px; border-radius: 50px; border: 3px solid var(--accent); outline: none; font-size: 18px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-        .ask-btn { background: var(--primary); color: var(--accent); border: none; padding: 0 30px; border-radius: 50px; cursor: pointer; font-weight: bold; font-size: 18px; }
-        .answer-box { width: 90%; max-width: 700px; margin: 40px auto; background: white; border-radius: 30px; padding: 35px; box-shadow: 0 15px 40px rgba(0,0,0,0.05); border-right: 12px solid var(--accent); display: none; text-align: right; line-height: 1.9; }
-        #aiResponse { font-size: 19px; white-space: pre-wrap; color: #334e68; }
-        .loader { display: none; margin: 20px auto; color: var(--primary); font-weight: bold; }
-        .motto { font-family: 'Amiri', serif; font-size: 20px; color: #64748b; margin-top: 40px; font-style: italic; }
+        input { flex: 1; padding: 20px 25px; border-radius: 50px; border: 3px solid var(--accent); outline: none; font-size: 18px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .ask-btn { background: var(--primary); color: var(--accent); border: none; padding: 0 30px; border-radius: 50px; cursor: pointer; font-weight: 900; font-size: 18px; }
+        .answer-box { width: 90%; max-width: 700px; margin: 40px auto; background: white; border-radius: 30px; padding: 35px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); border-right: 12px solid var(--accent); display: none; text-align: right; line-height: 2; animation: fadeIn 0.6s ease; }
+        #aiResponse { font-size: 20px; white-space: pre-wrap; color: #1e293b; }
+        .loader { display: none; margin: 25px auto; color: var(--primary); font-size: 18px; font-weight: bold; }
+        .motto { font-family: 'Amiri', serif; font-size: 20px; color: #64748b; margin: 50px 0; font-style: italic; }
+        @keyframes fadeIn { from {opacity: 0; transform: translateY(20px);} to {opacity: 1; transform: translateY(0);} }
     </style>
 </head>
 <body>
 
     <div class="header">
         <h1>السائل</h1>
-        <span class="en-name">Al-Sail</span>
-        <p>اسأل عن الحكم الشرعي وسأجيبك فوراً</p>
+        <p style="margin:0; font-size:14px; opacity:0.8; letter-spacing: 2px;">Al-Sail</p>
     </div>
 
     <div class="search-area">
-        <input type="text" id="userQuestion" placeholder="ما حكم الصلاة؟">
+        <input type="text" id="userQuestion" placeholder="اكتب سؤالك الفقهي هنا...">
         <button class="ask-btn" onclick="askGemini()">اسأل</button>
     </div>
 
-    <div class="loader" id="loader"><i class="fas fa-sync fa-spin"></i> جاري البحث...</div>
+    <div class="loader" id="loader">
+        <i class="fas fa-spinner fa-spin"></i> جاري استخراج الإجابة الشرعية...
+    </div>
 
     <div class="answer-box" id="answerBox">
-        <h3 style="color: var(--primary); margin-top:0;"><i class="fas fa-book-open"></i> الإجابة الشرعية:</h3>
+        <h3 style="color: var(--primary); margin-top:0;"><i class="fas fa-scroll"></i> الإجابة الشرعية:</h3>
         <div id="aiResponse"></div>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
+        <p style="font-size: 12px; color: #94a3b8;">* تم توليد هذه الإجابة آلياً بناءً على الكتاب والسنة.</p>
     </div>
 
     <div class="motto">نعتذر عن الخطأ فالعصمة لله وحده</div>
 
-    <script type="module">
-        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
-
-        // المفتاح الخاص بك موضوع هنا
-        const API_KEY = "AIzaSyAzDGMxPjYI1OWwFVGDibYWunjLS1x0q6M"; 
-
-        window.askGemini = async function() {
+    <script>
+        async function askGemini() {
             const question = document.getElementById('userQuestion').value;
             const answerBox = document.getElementById('answerBox');
             const responseDiv = document.getElementById('aiResponse');
             const loader = document.getElementById('loader');
+            
+            // المفتاح الجديد الذي أرسلته
+            const API_KEY = "AIzaSyBxxdwXUWHYEPRllVT6QCHQyx55XIiufAQ";
 
-            if (!question.trim()) return;
+            if (!question.trim()) {
+                alert("يرجى كتابة سؤالك أولاً");
+                return;
+            }
 
             loader.style.display = 'block';
             answerBox.style.display = 'none';
 
             try {
-                const genAI = new GoogleGenerativeAI(API_KEY);
-                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: "أجب كفقيه مسلم عالم بالكتاب والسنة، أعطِ إجابة دقيقة ومفصلة للسؤال التالي: " + question }] }]
+                    })
+                });
 
-                const prompt = `أنت فقيه مسلم، أجب بوضوح واختصار على: ${question}`;
-
-                const result = await model.generateContent(prompt);
-                const response = await result.response;
+                const data = await response.json();
                 
-                loader.style.display = 'none';
-                answerBox.style.display = 'block';
-                responseDiv.innerText = response.text();
+                if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    const text = data.candidates[0].content.parts[0].text;
+                    loader.style.display = 'none';
+                    answerBox.style.display = 'block';
+                    responseDiv.innerText = text;
+                } else {
+                    throw new Error("حدث خلل في الاستجابة");
+                }
 
             } catch (error) {
                 loader.style.display = 'none';
-                // هذه هي الرسالة التي ظهرت في صورتك
-                alert("حدث خطأ، تأكد من مفتاح الـ API أو اتصالك بالإنترنت.");
+                console.error(error);
+                alert("حدث خطأ في الاتصال. تأكد أن المفتاح لم يتم تعطيله من قبل جوجل.");
             }
         }
     </script>
