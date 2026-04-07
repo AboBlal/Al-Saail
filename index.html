@@ -1,39 +1,84 @@
-<script type="module">
-    // استدعاء مباشر وأكثر استقراراً
-    import { GoogleGenerativeAI } from "https://cdn.jsdelivr.net/npm/@google/generative-ai/+esm";
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Al-Sail | تطبيق السائل</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #064e3b; --accent: #c5a059; --bg: #f8fafc; }
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; text-align: center; }
+        .header { background: var(--primary); color: var(--accent); padding: 50px 20px; border-radius: 0 0 50px 50px; }
+        .header h1 { font-family: 'Amiri', serif; font-size: 40px; margin: 0; }
+        .header .en-name { font-size: 18px; display: block; margin-top: 5px; letter-spacing: 2px; }
+        .search-area { margin: -35px auto 20px; width: 90%; max-width: 600px; display: flex; gap: 10px; }
+        input { flex: 1; padding: 18px 25px; border-radius: 50px; border: 3px solid var(--accent); outline: none; font-size: 18px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .ask-btn { background: var(--primary); color: var(--accent); border: none; padding: 0 30px; border-radius: 50px; cursor: pointer; font-weight: bold; font-size: 18px; }
+        .answer-box { width: 90%; max-width: 700px; margin: 40px auto; background: white; border-radius: 30px; padding: 35px; box-shadow: 0 15px 40px rgba(0,0,0,0.05); border-right: 12px solid var(--accent); display: none; text-align: right; line-height: 1.9; }
+        #aiResponse { font-size: 19px; white-space: pre-wrap; color: #334e68; }
+        .loader { display: none; margin: 20px auto; color: var(--primary); font-weight: bold; }
+        .motto { font-family: 'Amiri', serif; font-size: 20px; color: #64748b; margin-top: 40px; font-style: italic; }
+    </style>
+</head>
+<body>
 
-    const API_KEY = "AIzaSyAzDGMxPjYI1OWwFVGDibYWunjLS1x0q6M"; 
+    <div class="header">
+        <h1>السائل</h1>
+        <span class="en-name">Al-Sail</span>
+        <p>اسأل عن الحكم الشرعي وسأجيبك فوراً</p>
+    </div>
 
-    window.askGemini = async function() {
-        const question = document.getElementById('userQuestion').value;
-        const answerBox = document.getElementById('answerBox');
-        const responseDiv = document.getElementById('aiResponse');
-        const loader = document.getElementById('loader');
+    <div class="search-area">
+        <input type="text" id="userQuestion" placeholder="ما حكم الصلاة؟">
+        <button class="ask-btn" onclick="askGemini()">اسأل</button>
+    </div>
 
-        if (!question.trim()) return;
+    <div class="loader" id="loader"><i class="fas fa-sync fa-spin"></i> جاري البحث...</div>
 
-        loader.style.display = 'block';
-        answerBox.style.display = 'none';
+    <div class="answer-box" id="answerBox">
+        <h3 style="color: var(--primary); margin-top:0;"><i class="fas fa-book-open"></i> الإجابة الشرعية:</h3>
+        <div id="aiResponse"></div>
+    </div>
 
-        try {
-            const genAI = new GoogleGenerativeAI(API_KEY);
-            // استخدمنا نموذج pro هنا لأنه أحياناً يكون أكثر استجابة للملفات المحلية
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    <div class="motto">نعتذر عن الخطأ فالعصمة لله وحده</div>
 
-            const prompt = `أجب كعالم شرعي مسلم بوضوح: ${question}`;
+    <script type="module">
+        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            
-            loader.style.display = 'none';
-            answerBox.style.display = 'block';
-            responseDiv.innerText = response.text();
+        // المفتاح الخاص بك موضوع هنا
+        const API_KEY = "AIzaSyAzDGMxPjYI1OWwFVGDibYWunjLS1x0q6M"; 
 
-        } catch (error) {
-            loader.style.display = 'none';
-            console.error(error);
-            // تنبيه أوضح للمشكلة
-            alert("فشل الاتصال: يرجى رفع الملف على GitHub Pages ليعمل بشكل صحيح، أو تأكد من جودة الإنترنت.");
+        window.askGemini = async function() {
+            const question = document.getElementById('userQuestion').value;
+            const answerBox = document.getElementById('answerBox');
+            const responseDiv = document.getElementById('aiResponse');
+            const loader = document.getElementById('loader');
+
+            if (!question.trim()) return;
+
+            loader.style.display = 'block';
+            answerBox.style.display = 'none';
+
+            try {
+                const genAI = new GoogleGenerativeAI(API_KEY);
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+                const prompt = `أنت فقيه مسلم، أجب بوضوح واختصار على: ${question}`;
+
+                const result = await model.generateContent(prompt);
+                const response = await result.response;
+                
+                loader.style.display = 'none';
+                answerBox.style.display = 'block';
+                responseDiv.innerText = response.text();
+
+            } catch (error) {
+                loader.style.display = 'none';
+                // هذه هي الرسالة التي ظهرت في صورتك
+                alert("حدث خطأ، تأكد من مفتاح الـ API أو اتصالك بالإنترنت.");
+            }
         }
-    }
-</script>
+    </script>
+</body>
+</html>
