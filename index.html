@@ -1,200 +1,39 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تطبيق السائل الذكي | محمد خير أبو بلال</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script type="module">
+    // استدعاء مباشر وأكثر استقراراً
+    import { GoogleGenerativeAI } from "https://cdn.jsdelivr.net/npm/@google/generative-ai/+esm";
 
-    <style>
-        :root {
-            --primary: #064e3b; 
-            --accent: #c5a059;  
-            --bg: #f8fafc;
+    const API_KEY = "AIzaSyAzDGMxPjYI1OWwFVGDibYWunjLS1x0q6M"; 
+
+    window.askGemini = async function() {
+        const question = document.getElementById('userQuestion').value;
+        const answerBox = document.getElementById('answerBox');
+        const responseDiv = document.getElementById('aiResponse');
+        const loader = document.getElementById('loader');
+
+        if (!question.trim()) return;
+
+        loader.style.display = 'block';
+        answerBox.style.display = 'none';
+
+        try {
+            const genAI = new GoogleGenerativeAI(API_KEY);
+            // استخدمنا نموذج pro هنا لأنه أحياناً يكون أكثر استجابة للملفات المحلية
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+            const prompt = `أجب كعالم شرعي مسلم بوضوح: ${question}`;
+
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            
+            loader.style.display = 'none';
+            answerBox.style.display = 'block';
+            responseDiv.innerText = response.text();
+
+        } catch (error) {
+            loader.style.display = 'none';
+            console.error(error);
+            // تنبيه أوضح للمشكلة
+            alert("فشل الاتصال: يرجى رفع الملف على GitHub Pages ليعمل بشكل صحيح، أو تأكد من جودة الإنترنت.");
         }
-
-        body {
-            font-family: 'Tajawal', sans-serif;
-            background-color: var(--bg);
-            margin: 0;
-            text-align: center;
-            color: #1e293b;
-        }
-
-        .header {
-            background: var(--primary);
-            color: var(--accent);
-            padding: 60px 20px;
-            border-radius: 0 0 50px 50px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
-        .header h1 {
-            font-family: 'Amiri', serif;
-            font-size: 42px;
-            margin: 0;
-        }
-
-        .search-container {
-            margin: -40px auto 20px;
-            width: 90%;
-            max-width: 650px;
-            display: flex;
-            gap: 10px;
-        }
-
-        input {
-            flex: 1;
-            padding: 20px 25px;
-            border-radius: 50px;
-            border: 3px solid var(--accent);
-            outline: none;
-            font-size: 18px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-            font-family: 'Tajawal', sans-serif;
-        }
-
-        .ask-btn {
-            background: var(--primary);
-            color: var(--accent);
-            border: none;
-            padding: 0 35px;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: 900;
-            font-size: 18px;
-            transition: 0.3s;
-        }
-
-        .ask-btn:hover {
-            transform: scale(1.05);
-            filter: brightness(1.2);
-        }
-
-        .answer-box {
-            width: 90%;
-            max-width: 750px;
-            margin: 40px auto;
-            background: white;
-            border-radius: 30px;
-            padding: 35px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
-            border-right: 12px solid var(--accent);
-            display: none; /* تظهر عند وجود إجابة */
-            text-align: right;
-            line-height: 2;
-            animation: slideUp 0.6s ease;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        #aiResponse {
-            font-size: 20px;
-            color: #334e68;
-            white-space: pre-wrap;
-        }
-
-        .loader {
-            display: none;
-            margin: 20px auto;
-            color: var(--primary);
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        .motto {
-            font-family: 'Amiri', serif;
-            font-size: 20px;
-            color: #64748b;
-            margin: 50px 0;
-            font-style: italic;
-        }
-
-        footer {
-            padding-bottom: 30px;
-            font-size: 14px;
-            color: #94a3b8;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="header">
-        <h1>تطبيق السائل الذكي</h1>
-        <p>اكتب سؤالك الفقهي وسأجيبك فوراً من المصادر الموثوقة</p>
-    </div>
-
-    <div class="search-container">
-        <input type="text" id="userQuestion" placeholder="مثلاً: ما هي شروط قبول الصلاة؟">
-        <button class="ask-btn" onclick="askGemini()">اسأل</button>
-    </div>
-
-    <div class="loader" id="loader">
-        <i class="fas fa-hands-praying fa-spin"></i> جاري البحث والاستنباط...
-    </div>
-
-    <div class="answer-box" id="answerBox">
-        <h3 style="color: var(--primary); margin-top: 0;">
-            <i class="fas fa-feather-alt"></i> الإجابة الشرعية:
-        </h3>
-        <div id="aiResponse"></div>
-        <div style="margin-top: 25px; border-top: 1px solid #eee; padding-top: 15px; font-size: 13px; color: #94a3b8;">
-            * هذه الإجابة مستخرجة بواسطة الذكاء الاصطناعي بناءً على الكتاب والسنة.
-        </div>
-    </div>
-
-    <div class="motto">نعتذر عن الخطأ فالعصمة لله وحده</div>
-
-    <footer>
-        <p>&copy; 2026 <strong>محمد خير أبو بلال</strong></p>
-    </footer>
-
-    <script type="module">
-        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
-
-        // المفتاح الخاص بك تم وضعه هنا بنجاح
-        const API_KEY = "AIzaSyAzDGMxPjYI1OWwFVGDibYWunjLS1x0q6M"; 
-
-        window.askGemini = async function() {
-            const question = document.getElementById('userQuestion').value;
-            const answerBox = document.getElementById('answerBox');
-            const responseDiv = document.getElementById('aiResponse');
-            const loader = document.getElementById('loader');
-
-            if (!question.trim()) {
-                alert("من فضلك اكتب سؤالك أولاً");
-                return;
-            }
-
-            loader.style.display = 'block';
-            answerBox.style.display = 'none';
-
-            try {
-                const genAI = new GoogleGenerativeAI(API_KEY);
-                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-                // تعليمات للذكاء الاصطناعي ليعطي أفضل نتيجة فقهية
-                const prompt = `أنت عالم فقيه مسلم متمكن. أجب على السؤال التالي بأسلوب شرعي رصين وواضح مع ذكر الأدلة إن وجدت: ${question}`;
-
-                const result = await model.generateContent(prompt);
-                const response = await result.response;
-                const text = response.text();
-
-                loader.style.display = 'none';
-                answerBox.style.display = 'block';
-                responseDiv.innerText = text;
-
-            } catch (error) {
-                loader.style.display = 'none';
-                console.error("خطأ:", error);
-                alert("حدث خطأ في جلب الإجابة. تأكد من اتصال الإنترنت.");
-            }
-        }
-    </script>
-</body>
-</html>
+    }
+</script>
