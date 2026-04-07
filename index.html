@@ -48,7 +48,6 @@
             const responseDiv = document.getElementById('aiResponse');
             const loader = document.getElementById('loader');
             
-            // المفتاح الأخير الذي أرسلته أنت
             const API_KEY = "AIzaSyBxxdwXUWHYEPRllVT6QCHQyx55XIiufAQ";
 
             if (!question.trim()) {
@@ -60,36 +59,34 @@
             answerBox.style.display = 'none';
 
             try {
-                // استخدام رابط النسخة v1 المستقرة
-                const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+                // التعديل هنا: استخدام رابط v1beta لضمان التوافق مع موديل gemini-1.5-flash كما طلبت الرسالة
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
                 
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: "أجب كفقيه مسلم عالم بالكتاب والسنة: " + question }] }]
+                        contents: [{ parts: [{ text: "أجب كفقيه مسلم يلتزم بالكتاب والسنة: " + question }] }]
                     })
                 });
 
                 const data = await response.json();
                 
-                // التأكد من أن الإجابة وصلت بشكل صحيح
                 if (data.candidates && data.candidates[0].content.parts[0].text) {
                     const text = data.candidates[0].content.parts[0].text;
                     loader.style.display = 'none';
                     answerBox.style.display = 'block';
                     responseDiv.innerText = text;
                 } else if (data.error) {
-                    // إذا كان هناك خطأ من جوجل (مثل تعطيل المفتاح) سيظهر هنا
                     throw new Error(data.error.message);
                 } else {
-                    throw new Error("لم يتم العثور على إجابة");
+                    throw new Error("لم يتم العثور على إجابة، حاول صياغة السؤال بشكل أوضح.");
                 }
 
             } catch (error) {
                 loader.style.display = 'none';
                 console.error("Error Detail:", error);
-                alert("تنبيه: " + error.message);
+                alert("تنبيه من Al-Sail: " + error.message);
             }
         }
     </script>
