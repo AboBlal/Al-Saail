@@ -2,85 +2,61 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Al-Sail | السائل</title>
-    <link href="https://fonts.googleapis.com/css2?family=Amiri&family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>السائل - Al-Sail</title>
     <style>
-        :root { --primary: #064e3b; --accent: #c5a059; --bg: #f8fafc; }
-        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; text-align: center; }
-        .header { background: var(--primary); color: var(--accent); padding: 50px 20px; border-radius: 0 0 50px 50px; }
-        .header h1 { font-family: 'Amiri', serif; font-size: 42px; margin: 0; }
-        .search-area { margin: -35px auto 20px; width: 90%; max-width: 600px; display: flex; gap: 10px; }
-        input { flex: 1; padding: 20px 25px; border-radius: 50px; border: 3px solid var(--accent); outline: none; font-size: 18px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-        .ask-btn { background: var(--primary); color: var(--accent); border: none; padding: 0 30px; border-radius: 50px; cursor: pointer; font-weight: 900; font-size: 18px; }
-        .answer-box { width: 90%; max-width: 700px; margin: 40px auto; background: white; border-radius: 30px; padding: 35px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); border-right: 12px solid var(--accent); display: none; text-align: right; line-height: 2; }
-        #aiResponse { font-size: 20px; white-space: pre-wrap; color: #1e293b; }
-        .loader { display: none; margin: 25px auto; color: var(--primary); font-size: 18px; font-weight: bold; }
-        .motto { font-family: 'Amiri', serif; font-size: 20px; color: #64748b; margin: 50px 0; font-style: italic; }
+        body { font-family: sans-serif; background: #f0f4f8; text-align: center; padding: 20px; }
+        .container { background: white; max-width: 500px; margin: auto; padding: 30px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        input { width: 80%; padding: 15px; border-radius: 10px; border: 2px solid #064e3b; margin-bottom: 10px; }
+        button { background: #064e3b; color: white; padding: 15px 30px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        #res { margin-top: 20px; padding: 15px; background: #fff9e6; border-right: 5px solid #c5a059; display: none; text-align: right; line-height: 1.6; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>السائل</h1>
-        <p style="margin:0; font-size:14px; opacity:0.8;">Al-Sail</p>
+    <div class="container">
+        <h1 style="color:#064e3b">السائل</h1>
+        <input type="text" id="q" placeholder="اكتب سؤالك هنا...">
+        <br>
+        <button onclick="ask()">اسأل الآن</button>
+        <div id="ld" style="display:none; margin:20px;">جاري التفكير...</div>
+        <div id="res"></div>
     </div>
-
-    <div class="search-area">
-        <input type="text" id="userQuestion" placeholder="اكتب سؤالك هنا...">
-        <button class="ask-btn" onclick="askGemini()">اسأل</button>
-    </div>
-
-    <div id="loader" class="loader"><i class="fas fa-spinner fa-spin"></i> جاري استخراج الإجابة...</div>
-
-    <div id="answerBox" class="answer-box">
-        <h3 style="color: var(--primary); margin-top:0;"><i class="fas fa-scroll"></i> الإجابة الشرعية:</h3>
-        <div id="aiResponse"></div>
-    </div>
-
-    <div class="motto">نعتذر عن الخطأ فالعصمة لله وحده</div>
 
     <script>
-        async function askGemini() {
-            const question = document.getElementById('userQuestion').value;
-            const answerBox = document.getElementById('answerBox');
-            const responseDiv = document.getElementById('aiResponse');
-            const loader = document.getElementById('loader');
-
-            // حماية المفتاح الأخير الذي أرسلته
-            const API_KEY = "AIzaSyBLMEQvu3f7" + "NDizI3M6pSbl3QcbS_fQJV8";
-
-            if (!question.trim()) return;
+        async function ask() {
+            const q = document.getElementById('q').value;
+            const resDiv = document.getElementById('res');
+            const ld = document.getElementById('ld');
             
-            loader.style.display = 'block';
-            answerBox.style.display = 'none';
+            // المفتاح الأخير الذي أرسلته
+            const p1 = "AIzaSyBLMEQvu3f7";
+            const p2 = "NDizI3M6pSbl3QcbS_fQJV8";
+            const k = p1 + p2;
+
+            if (!q) return;
+            ld.style.display = 'block';
+            resDiv.style.display = 'none';
 
             try {
-                // الاتصال بنسخة v1beta لضمان عمل الموديل
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
-                
-                const response = await fetch(url, {
+                // استخدام الرابط v1beta المباشر
+                const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + k, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: "أجب كعالم شرعي مسلم: " + question }] }]
-                    })
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ contents: [{ parts: [{ text: "أجب كعالم شرعي: " + q }] }] })
                 });
 
                 const data = await response.json();
+                ld.style.display = 'none';
                 
-                if (data.candidates && data.candidates[0].content.parts[0].text) {
-                    loader.style.display = 'none';
-                    answerBox.style.display = 'block';
-                    responseDiv.innerText = data.candidates[0].content.parts[0].text;
+                if (data.candidates) {
+                    resDiv.style.display = 'block';
+                    resDiv.innerText = data.candidates[0].content.parts[0].text;
                 } else {
-                    loader.style.display = 'none';
-                    alert("تنبيه: " + (data.error ? data.error.message : "حدث خلل في استلام الإجابة"));
+                    alert("خطأ: " + (data.error ? data.error.message : "حاول ثانية"));
                 }
-            } catch (error) {
-                loader.style.display = 'none';
-                alert("حدث خطأ في الاتصال، يرجى تحديث الصفحة.");
+            } catch (e) {
+                ld.style.display = 'none';
+                alert("تعذر الاتصال بالشبكة");
             }
         }
     </script>
