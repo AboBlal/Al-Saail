@@ -48,6 +48,7 @@
             const responseDiv = document.getElementById('aiResponse');
             const loader = document.getElementById('loader');
             
+            // مفتاحك الأخير المحدث
             const API_KEY = "AIzaSyBxxdwXUWHYEPRllVT6QCHQyx55XIiufAQ";
 
             if (!question.trim()) {
@@ -59,14 +60,14 @@
             answerBox.style.display = 'none';
 
             try {
-                // التعديل هنا: استخدام رابط v1beta لضمان التوافق مع موديل gemini-1.5-flash كما طلبت الرسالة
+                // التصحيح: استخدمنا v1beta لأن الموديل flash موجود فيها فقط حالياً
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
                 
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: "أجب كفقيه مسلم يلتزم بالكتاب والسنة: " + question }] }]
+                        contents: [{ parts: [{ text: "أجب كفقيه مسلم يلتزم بالكتاب والسنة والوسطية: " + question }] }]
                     })
                 });
 
@@ -80,13 +81,13 @@
                 } else if (data.error) {
                     throw new Error(data.error.message);
                 } else {
-                    throw new Error("لم يتم العثور على إجابة، حاول صياغة السؤال بشكل أوضح.");
+                    throw new Error("لم تصل إجابة، حاول مرة أخرى.");
                 }
 
             } catch (error) {
                 loader.style.display = 'none';
-                console.error("Error Detail:", error);
-                alert("تنبيه من Al-Sail: " + error.message);
+                console.error("Error Details:", error);
+                alert("تنبيه: " + error.message);
             }
         }
     </script>
